@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Trabalho de Computação Gráfica</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap -->
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+	<div class="panel-heading">
+   		<h1>Sistema de Visualiza&ccedil&atildeo Projetiva baseada em Perspectiva C&ocircnica/Cil&iacutendrica</h1>	
+	</div>
+	<div class="col-xs-12 col-sm-6 col-md-4 text-center">
+		<h4>Escolha o tipo de Proje&ccedil&atildeo: </h4>
+		<div class="btn-group" role="group" aria-label="...">
+			<button id="cil" type="button" class="btn btn-default">C&ocircnica</button>
+			<button id="par"type="button" class="btn btn-default">Cil&iacutendrica</button>
+		</div>
+		<hr>
+		<h4>Escolha a forma geom&eacutetrica a ser usada: </h4>
+		<div class="btn-group" role="group" aria-label="...">
+			<button id="cubo" type="button" class="btn btn-default">Cubo</button>
+			<button id="piramide"type="button" class="btn btn-default">Pir&acircmide</button>
+			<button id="casa" type="button" class="btn btn-default">Casa</button>
+		</div>
+		<hr>
+		<h4>Defina o ponto onde o observador estar&aacute: </h4>
+		<div id="c" class="input-group">
+			<span class="input-group-addon">X:</span>
+			<input id="cx" class="form-control" onchange="change_c()" type="number" min="-1000" max="1000" step="1" value="0"/>
+			<span class="input-group-addon">Y:</span>
+			<input id="cy" class="form-control" onchange="change_c()" type="number" min="-1000" max="1000" step="1" value="0"/>
+			<span class="input-group-addon">Z:</span>
+			<input id="cz" class="form-control" onchange="change_c()" type="number" min="-1000" max="1000" step="1" value="0"/>
+		</div>
+		<hr>
+		<h4>Defina a Primeiro Ponto:</h4>
+		<div id="p1" class="input-group">
+			<span class="input-group-addon">X:</span>
+			<input id="p1x" class="form-control" type="text" onchange="change_p1()">
+			<span class="input-group-addon">Y:</span>
+			<input id="p1y" class="form-control" type="text" onchange="change_p1()">
+			<span class="input-group-addon">Z:</span>
+			<input id="p1z" class="form-control" type="text" onchange="change_p1()">
+		</div>
+
+		<h4>Defina o Segundo Ponto:</h4>
+		<div id="p2" class="input-group">
+			<span class="input-group-addon">X:</span>
+			<input id="p2x" class="form-control" type="text" onchange="change_p2()">
+			<span class="input-group-addon">Y:</span>
+			<input id="p2y" class="form-control" type="text" onchange="change_p2()">
+			<span class="input-group-addon">Z:</span>
+			<input id="p2z" class="form-control" type="text" onchange="change_p2()">
+		</div>
+
+		<h4>Defina o Terceiro Ponto:</h4>
+		<div id="p3" class="input-group">
+			<span class="input-group-addon">X:</span>
+			<input id="p3x" class="form-control" type="text" onchange="change_p3()">
+			<span class="input-group-addon">Y:</span>
+			<input id="p3y" class="form-control" type="text" onchange="change_p3()">
+			<span class="input-group-addon">Z:</span>
+			<input id="p3z" class="form-control" type="text" onchange="change_p3()">
+		</div>
+		<hr>
+		<h4>Defina o Ponto no Plano(N&atildeo Obrigat&oacuterio):</h4>
+		<div id="r" class="input-group">
+			<span class="input-group-addon">X:</span>
+			<input id="rx" class="form-control" type="text" onchange="change_r()">
+			<span class="input-group-addon">Y:</span>
+			<input id="ry" class="form-control" type="text" onchange="change_r()">
+			<span class="input-group-addon">Z:</span>
+			<input id="rz" class="form-control" type="text" onchange="change_r()">
+		</div>
+		<hr>
+		<div>
+			<button id="reset" type="button" class="btn btn-default" aria-label="Reset">
+				<span class="glyphicon glyphicon-refresh" aria-hidden="false"> Reset</span>
+			</button>
+		</div>
+		<hr>
+		<h4>Feito por: Caio Henrique Segawa Tonetti - RA: 79064</h4>
+	</div>
+	<div class="col-sm-6 col-md-8">
+		<canvas id="myCanvas" width="600" height="600" style="border:1px solid #000000;">
+		Your browser does not support the HTML5 canvas tag.
+		</canvas>		
+	</div>
+
+<!-- jQuery (necessario para os plugins Javascript Bootstrap) -->
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
+<script>
+	var P1, P2, P3, C, geom = 0, proj = 0, isr = false, R;
+	
+	R = new Array(3);
+	P1 = [5,8,1];
+	P2 = [9,4,3];
+	P3 = [7,5,9];
+	C = [10,10,15];
+
+	initialize();
+
+	function initialize() {
+		var V1, V2, N, d, NV;
+		var Pmatrix, Tmatrix, OBJ, OBJN;
+		var aux = 0;
+		var faces;
+		var S, X, Y, U, V, r;
+
+		V1 = new Array(3);
+		V2 = new Array(3);
+		N = new Array(3);
+		d = new Array(2);
+		S = new Array(2);
+
+		if (geom == 0) {
+			OBJ = init_box_p();
+			faces = init_box_f();
+			NV = 8;
+		} else if (geom == 1) {
+			OBJ = init_pir_p();
+			faces = init_pir_f();
+			NV = 5;
+		} else {
+			OBJ = init_casa_p();
+			faces = init_casa_f();
+			NV = 18;
+		}
+	
+		Pmatrix = createArray(4,4);
+		OBJN = createArray(4,NV);
+
+		for (var i=0; i<3; i++) {
+			V1[i] = P1[i] - P2[i];
+			V2[i] = P3[i] - P2[i];
+		}
+
+		//Cálculo do vetor normal
+		N[0] = V1[1]*V2[2] - V2[1]*V1[2];
+		N[1] = V1[2]*V2[0] - V2[2]*V1[0];
+		N[2] = V1[0]*V2[1] - V2[0]*V1[1];
+
+		//Cálculo de D0 e D1
+		d[0] = 0;
+		d[1] = 0;
+		for (var i=0; i<3; i++) {
+			if (isr) {
+				d[0] += R[i]*N[i];
+			} else {
+				d[0] += P1[i]*N[i];
+			}
+			d[1] += C[i]*N[i];
+		}
+
+		//Construção da Matriz Perspectiva
+
+		if (proj == 0) {
+			Pmatrix = persp_mat(d, N);
+		} else {
+			Pmatrix = paral_mat(d, N);		
+		}
+
+		//Multiplicando os pontos pela matriz perspectiva
+		for (var i=0; i<4; i++) {
+		    for (var j=0; j<NV; j++) {
+		        for (var k=0; k<4; k++) {
+		           aux += Pmatrix[i][k]*OBJ[k][j]; 
+		        }
+		        OBJN[i][j] = aux;
+		        aux = 0;
+		    }
+		}
+
+		//Transformação para coordenadas cartesianas
+		for (var i=0; i<NV; i++) {
+		    for (var j=0; j<4; j++) {
+				if (OBJN[3][i] != 0) {
+		        	OBJN[j][i] /= OBJN[3][i];
+				}
+		    }
+		}
+
+		//Transformando para coordenadas para alinhar o plano 
+		//Alinhando no plano xy
+		r = Math.sqrt(N[0]*N[0] + N[1]*N[1]);
+		if (r != 0) {
+			Tmatrix = [[N[1]/r, -N[0]/r, 0],
+		               [N[0]/r,  N[1]/r, 0],
+		               [     0,       0, 1]];
+
+			for (var i=0; i<3; i++) {
+		    	for (var j=0; j<NV; j++) {
+		    	    for (var k=0; k<3; k++) {
+		    	       aux += Tmatrix[i][k]*OBJN[k][j]; 
+		    	    }
+		    	    OBJ[i][j] = aux;
+		    	    aux = 0;
+		    	}
+			}
+		}
+
+		//Alinhando no plano zy
+		r = Math.sqrt(N[2]*N[2] + N[1]*N[1]);
+		if (r != 0) {
+			Tmatrix = [[1,      0,       0],
+		               [0, N[2]/r, -N[1]/r],
+		               [0, N[1]/r,  N[2]/r]];
+
+			for (var i=0; i<3; i++) {
+		    	for (var j=0; j<NV; j++) {
+		    	    for (var k=0; k<3; k++) {
+		    	       aux += Tmatrix[i][k]*OBJ[k][j]; 
+		    	    }
+		    	    OBJN[i][j] = aux;
+					OBJN[2][j] = 1; 
+		    	    aux = 0;
+		    	}
+			}
+
+			for (var i=0; i<NV; i++) {
+				OBJN[2][j] = 1; 
+			}
+		}
+
+		//----------- Passando para tela
+
+		X = [9223372036854775807,-9223372036854775807];
+		Y = [9223372036854775807,-9223372036854775807];
+
+		//Verificar menor e maior ponto
+		for (var i=0; i<NV; i++) {
+			if (X[0] > OBJN[0][i]) {		
+				X[0] = OBJN[0][i];
+			} else if (X[1] < OBJN[0][i]) {
+				X[1] = OBJN[0][i];
+			}
+			if (Y[0] > OBJN[1][i]) {
+				Y[0] = OBJN[1][i];
+			} else if (Y[1] < OBJN[1][i]) {
+				Y[1] = OBJN[1][i];
+			}
+		}
+		
+		//Aumentando os máximos e mínimos em 20%
+		X[0] -= Math.abs(X[1]-X[0])*0.2;
+		X[1] += Math.abs(X[1]-X[0])*0.2;
+		Y[0] -= Math.abs(Y[1]-Y[0])*0.2;
+		Y[1] += Math.abs(Y[1]-Y[0])*0.2;
+
+		S = [600/(X[1]-X[0]), 600/(Y[1]-Y[0])];
+
+		//Criando matrix para transformação para coordenadas de dispositivo
+		Tmatrix = [[S[0],     0, -(X[0]*S[0])],
+		           [   0,  -S[1], (Y[0]*S[1])],
+		           [   0,     0,            1]];
+
+	
+		for (var i=0; i<3; i++) {
+		    for (var j=0; j<NV; j++) {
+		        for (var k=0; k<3; k++) {
+		           aux += Tmatrix[i][k]*OBJN[k][j]; 
+		        }
+		        OBJ[i][j] = aux;
+		        aux = 0;
+		    }
+		}
+
+		//Corrigindo a reflexão em Y
+		for (var i=0; i<NV; i++) {
+			if (Y[0] > OBJ[1][i]) {
+				Y[0] = OBJ[1][i];
+			} else if (Y[1] < OBJ[1][i]) {
+				Y[1] = OBJ[1][i];
+			}
+		}
+
+		for (var i=0; i<NV; i++) {
+			OBJ[1][i] += Math.abs(Y[0] + Y[1]);
+		}
+
+		//Desenhando os pontos
+		var c = document.getElementById("myCanvas");
+		var ctx = c.getContext("2d");
+		ctx.clearRect(0, 0, c.width, c.height);
+
+		for (var i=0; i<NV; i++) {
+			ctx.beginPath();
+
+			ctx.fillStyle = "red";
+			ctx.fillRect(OBJ[0][i],OBJ[1][i],2,2);
+			ctx.fill();
+
+			ctx.closePath();
+		}
+	
+		//Desenhando as faces
+		for (var i in faces) {
+			oFace = faces[i];		
+			ctx.beginPath();
+
+			ctx.moveTo(OBJ[0][oFace.a], OBJ[1][oFace.a]);
+			ctx.lineTo(OBJ[0][oFace.b], OBJ[1][oFace.b]);
+			ctx.lineTo(OBJ[0][oFace.c], OBJ[1][oFace.c]);
+
+			ctx.strokeStyle = '#ff0000';
+			ctx.stroke();
+		}
+	}
+
+	function paral_mat(d, N) {
+		var mat = createArray(4,4);
+
+		mat[0][0] = d[1] - C[0]*N[0];
+		mat[0][1] = -C[0]*N[1];
+		mat[0][2] = -C[0]*N[2];
+		mat[0][3] = C[0]*d[0];
+
+		mat[1][0] = -C[1]*N[0];
+		mat[1][1] = d[1] - C[1]*N[1];
+		mat[1][2] = -C[1]*N[2];
+		mat[1][3] = C[1]*d[0];
+
+		mat[2][0] = -C[2]*N[0];
+		mat[2][1] = -C[2]*N[1];
+		mat[2][2] = d[1] - C[2]*N[2];
+		mat[2][3] = C[2]*d[0];
+
+		mat[3][0] = 0;
+		mat[3][1] = 0;
+		mat[3][2] = 0;
+		mat[3][3] = -d[1];
+
+		return mat; 
+	}
+
+	function persp_mat(d, N) {
+		var mat = createArray(4,4);		
+
+		mat[0][0] = d[0] + C[0]*N[0];
+		mat[0][1] = C[0]*N[1];
+		mat[0][2] = C[0]*N[2];
+		mat[0][3] = -C[0]*(d[0] + d[1]);
+
+		mat[1][0] = C[1]*N[0];
+		mat[1][1] = d[0] + C[1]*N[1];
+		mat[1][2] = C[1]*N[2];
+		mat[1][3] = -C[1]*(d[0] + d[1]);
+
+		mat[2][0] = C[2]*N[0];
+		mat[2][1] = C[2]*N[1];
+		mat[2][2] = d[0] + C[2]*N[2];
+		mat[2][3] = -C[2]*(d[0] + d[1]);
+
+		mat[3][0] = N[0];
+		mat[3][1] = N[1];
+		mat[3][2] = N[2];
+		mat[3][3] = -d[1];
+
+		return mat; 
+	}
+
+	//------------- Inicializando Objeto CUBO
+	function init_box_p() {
+		 var OBJ = [[0, 3, 3, 0, 0, 3, 3, 0],
+			   	    [0, 0, 0, 0, 3, 3, 3, 3],
+			   		[3, 3, 0, 0, 3, 3, 0, 0], 
+			   		[1, 1, 1, 1, 1, 1, 1, 1]];
+		return OBJ;
+	}
+
+	function init_box_f() {
+		var faces = new Array();		
+		faces.push(new Face3(0,1,2));
+		faces.push(new Face3(0,3,2));// 
+		faces.push(new Face3(7,4,0));
+		faces.push(new Face3(7,3,0));//
+		faces.push(new Face3(6,5,1));
+		faces.push(new Face3(6,2,1));//
+		faces.push(new Face3(4,5,6));
+		faces.push(new Face3(4,7,6));//
+		faces.push(new Face3(3,7,6));
+		faces.push(new Face3(3,2,6));//
+		faces.push(new Face3(0,4,5));
+		faces.push(new Face3(0,1,5));//
+
+		return faces;
+	}
+
+	//------------- Inicializando Objeto PIRAMIDE
+
+	function init_pir_p() {
+		 var OBJ = [[4, 4, 0, 0, 2],
+			   	    [0, 4, 4, 0, 2],
+			   		[0, 0, 0, 0, 2], 
+			   		[1, 1, 1, 1, 1]];
+		return OBJ;
+	}
+
+	function init_pir_f() {
+		var faces = new Array();		
+		faces.push(new Face3(0,1,4));
+		faces.push(new Face3(1,2,4));// 
+		faces.push(new Face3(2,3,4));
+		faces.push(new Face3(3,0,4));//
+		faces.push(new Face3(0,1,2));
+		faces.push(new Face3(0,3,2));//
+
+		return faces;
+	}
+
+	//------------- Inicializando Objeto CASA
+	function init_casa_p() {
+		 var OBJ = [[4,4,-2,-2,4,4,-2,-2,4,-2,2,0,2,0,4,4,4,4],
+			   	    [0,4, 0, 4,0,4, 4, 0,2, 2,4,4,4,4,1,3,1,3],
+			   		[0,0, 0, 0,4,4, 4, 4,5, 5,1,1,2,2,0,0,2,2], 
+			   		[1,1, 1, 1,1,1, 1, 1,1, 1,1,1,1,1,1,1,1,1]];
+		return OBJ;
+	}
+
+	function init_casa_f() {
+		var faces = new Array();		
+		faces.push(new Face3(1,0,4));
+		faces.push(new Face3(1,5,4));
+		faces.push(new Face3(2,7,6));
+		faces.push(new Face3(2,3,6));
+		faces.push(new Face3(1,0,2));
+		faces.push(new Face3(1,3,2));
+		faces.push(new Face3(4,0,2));
+		faces.push(new Face3(4,7,2));
+		faces.push(new Face3(5,1,3));
+		faces.push(new Face3(5,6,3));
+		faces.push(new Face3(12,10,11));
+		faces.push(new Face3(12,13,11));
+		faces.push(new Face3(16,14,15));
+		faces.push(new Face3(16,17,15));
+		faces.push(new Face3(8,5,4));
+		faces.push(new Face3(9,7,6));
+		faces.push(new Face3(8,4,7));
+		faces.push(new Face3(8,9,7));
+		faces.push(new Face3(8,5,6));
+		faces.push(new Face3(8,9,6));
+
+		return faces;
+	}
+
+	//-------------- Controle das variáveis
+
+	function change_c() {
+		if ($("#cx").val() && !isNaN($("#cx").val())) {
+			if ($("#cy").val() && !isNaN($("#cy").val())) {
+				if ($("#cz").val() && !isNaN($("#cz").val())) {
+					C[0] = $("#cx").val();
+					C[1] = $("#cy").val();
+					C[2] = $("#cz").val();
+				}
+			}
+		}
+
+		initialize();
+	}
+
+	function change_p1() {
+		if ($("#p1x").val() && !isNaN(parseFloat($("#p1x").val()))) {
+			if ($("#p1y").val() && !isNaN(parseFloat($("#p1y").val()))) {
+				if ($("#p1z").val() && !isNaN(parseFloat($("#p1z").val()))) {
+					P1[0] = parseFloat($("#p1x").val());
+					P1[1] = parseFloat($("#p1y").val());
+					P1[2] = parseFloat($("#p1z").val());
+				}
+			}
+		}
+
+		initialize();
+	}
+
+	function change_p2() {
+		if ($("#p2x").val() && !isNaN(parseFloat($("#p2x").val()))) {
+			if ($("#p2y").val() && !isNaN(parseFloat($("#p2y").val()))) {
+				if ($("#p2z").val() && !isNaN(parseFloat($("#p2z").val()))) {
+					P2[0] = parseFloat($("#p2x").val());
+					P2[1] = parseFloat($("#p2y").val());
+					P2[2] = parseFloat($("#p2z").val());
+				}
+			}
+		}
+
+		initialize();
+	}
+
+	function change_p3() {
+		if ($("#p3x").val() && !isNaN(parseFloat($("#p3x").val()))) {
+			if ($("#p3y").val() && !isNaN(parseFloat($("#p3y").val()))) {
+				if ($("#p3z").val() && !isNaN(parseFloat($("#p3z").val()))) {
+					P3[0] = parseFloat($("#p3x").val());
+					P3[1] = parseFloat($("#p3y").val());
+					P3[2] = parseFloat($("#p3z").val());
+				}
+			}
+		}
+
+		initialize();
+	}
+
+	function change_r() {
+		if ($("#rx").val() && !isNaN(parseFloat($("#rx").val()))) {
+			if ($("#ry").val() && !isNaN(parseFloat($("#ry").val()))) {
+				if ($("#rz").val() && !isNaN(parseFloat($("#rz").val()))) {
+					R[0] = parseFloat($("#rx").val());
+					R[1] = parseFloat($("#ry").val());					
+					R[2] = parseFloat($("#rz").val());
+					
+					isr = true;
+				} else isr = false;
+			} else isr = false;
+		} else isr = false;
+
+		initialize();
+	}
+	
+	//------------ Função para auxiliar criação de matrizes
+
+	function createArray(length) {
+		var arr = new Array(length || 0),
+		    i = length;
+
+		if (arguments.length > 1) {
+		    var args = Array.prototype.slice.call(arguments, 1);
+		    while (i--) arr[length - 1 - i] = createArray.apply(this, args);
+		}
+
+		return arr;
+	}
+
+	//------------ Classe para criação de faces
+
+	function Face3(a,b,c,d) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+	}
+
+	//------------- JQuery para inicializar valores da interface
+
+	$(document).ready(function(){
+		$("#cx").val(C[0]);
+		$("#cy").val(C[1]);
+		$("#cz").val(C[2]);
+
+		$("#p1x").val(P1[0]);
+		$("#p1y").val(P1[1]);
+		$("#p1z").val(P1[2]);
+
+		$("#p2x").val(P2[0]);
+		$("#p2y").val(P2[1]);
+		$("#p2z").val(P2[2]);
+
+		$("#p3x").val(P3[0]);
+		$("#p3y").val(P3[1]);
+		$("#p3z").val(P3[2]);
+
+		//Escolha de objetos
+		$("#cubo").click(function(){
+        	geom = 0;
+			initialize();
+    	});
+
+		$("#piramide").click(function(){
+        	geom = 1;
+			initialize();
+    	});
+
+		$("#casa").click(function(){
+        	geom = 2;
+			initialize();
+    	});
+
+		$("#cil").click(function(){
+        	proj = 0;
+			initialize();
+    	});
+
+		$("#par").click(function(){
+        	proj = 1;
+			initialize();
+    	});
+
+		$("#reset").click(function(){
+			P1 = [5,8,1];
+			P2 = [9,4,3];
+			P3 = [7,5,9];
+			C = [10,10,15];
+			
+			$("#cx").val(C[0]);
+			$("#cy").val(C[1]);
+			$("#cz").val(C[2]);
+
+			$("#p1x").val(P1[0]);
+			$("#p1y").val(P1[1]);
+			$("#p1z").val(P1[2]);
+
+			$("#p2x").val(P2[0]);
+			$("#p2y").val(P2[1]);
+			$("#p2z").val(P2[2]);
+
+			$("#p3x").val(P3[0]);
+			$("#p3y").val(P3[1]);
+			$("#p3z").val(P3[2]);
+
+			isr = false;
+			$("#rx").val('');
+			$("#ry").val('');
+			$("#rz").val('');
+
+			initialize();
+		});
+		$('#myCanvas').css('background-color', 'rgba(0, 0, 0, 1)');
+	});
+</script>
+</body>
+</html>
